@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YT Unblocker</title>
+    <style>
+        :root {
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.4);
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text);
+            background: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(129, 140, 248, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(15, 23, 42, 1) 0px, transparent 100%);
+            background-attachment: fixed;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: -3px;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #fff 30%, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .input-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 750px;
+            margin-bottom: 50px;
+        }
+
+        .search-container {
+            display: flex;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 8px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 15px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-play {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 0 25px;
+            border-radius: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-blank {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid var(--glass-border);
+            padding: 0 15px;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-play:hover { background: #fff; transform: scale(1.05); }
+        .btn-blank:hover { background: rgba(255, 255, 255, 0.2); }
+
+        #player {
+            width: 100%;
+            max-width: 1000px;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: 32px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 80px;
+        }
+
+        .section-box { width: 100%; max-width: 1100px; margin-bottom: 50px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+
+        .card {
+            position: relative;
+            background: var(--glass);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            cursor: pointer;
+            transition: 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .card:hover { transform: scale(1.05); border-color: var(--accent); }
+        .thumb { width: 100%; aspect-ratio: 16/9; background-size: cover; background-position: center; }
+        .card-body { padding: 12px; }
+        .vid-title { font-size: 14px; color: #ddd; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        .fav-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #777;
+            z-index: 5;
+        }
+        .is-fav { color: #ffd700 !important; }
+    </style>
+</head>
+<body>
+
+    <h1>YT UNBLOCKER</h1>
+    
+    <div class="input-wrapper">
+        <div class="search-container">
+            <input type="text" id="ytUrl" placeholder="Paste YouTube link here..." onkeydown="if(event.key === 'Enter') handleAction(true)">
+            <div class="btn-group">
+                <button class="btn-blank" onclick="handleAction(true)">Fullscreen (about:blank)</button>
+                <button class="btn-play" onclick="handleAction(false)">Preview</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="player">
+        <div style="display:flex; height:100%; align-items:center; justify-content:center; color:rgba(255,255,255,0.05); font-weight:900; font-size:4rem;">
+            PREVIEW
+        </div>
+    </div>
+
+    <div class="section-box" id="fav-box" style="display: none;">
+        <div style="margin-bottom:15px; opacity:0.6; font-weight:bold;">⭐ FAVORITES</div>
+        <div id="favGrid" class="grid"></div>
+    </div>
+
+    <div class="section-box">
+        <div style="margin-bottom:15px; opacity:0.6; font-weight:bold;">🕒 RECENTS</div>
+        <div id="histGrid" class="grid"></div>
+    </div>
+
+    <script>
+        window.onload = () => { renderHistory(); renderFavs(); };
+
+        function extractId(url) {
+            const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        async function handleAction(toBlank, providedId = null) {
+            const id = providedId || extractId(document.getElementById('ytUrl').value);
+            if (!id) return;
+
+            // Fetch Title
+            let title = "Video Stream";
+            try {
+                const res = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${id}`);
+                const data = await res.json();
+                title = data.title || "Untitled Video";
+            } catch (e) {}
+
+            saveToHistory(id, title);
+
+            if (toBlank) {
+                openFullscreenBlank(id, title);
+            } else {
+                document.getElementById('player').innerHTML = 
+                    `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function openFullscreenBlank(id, title) {
+            const win = window.open('about:blank', '_blank');
+            const html = `
+                <html>
+                <head>
+                    <title>${title}</title>
+                    <style>
+                        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: #000; overflow: hidden; }
+                        iframe { width: 100%; height: 100%; border: none; }
+                    </style>
+                </head>
+                <body>
+                    <iframe src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0" allowfullscreen="true" allow="autoplay; fullscreen"></iframe>
+                </body>
+                </html>`;
+            win.document.write(html);
+        }
+
+        function saveToHistory(id, title) {
+            let hist = JSON.parse(localStorage.getItem('yt_history') || "[]");
+            hist = hist.filter(v => v.id !== id);
+            hist.unshift({id, title});
+            localStorage.setItem('yt_history', JSON.stringify(hist.slice(0, 8)));
+            renderHistory();
+        }
+
+        function toggleFav(e, id, title) {
+            e.stopPropagation();
+            let favs = JSON.parse(localStorage.getItem('yt_favorites') || "[]");
+            if (favs.find(f => f.id === id)) {
+                favs = favs.filter(f => f.id !== id);
+            } else {
+                favs.push({id, title});
+            }
+            localStorage.setItem('yt_favorites', JSON.stringify(favs));
+            renderFavs();
+        }
+
+        function renderGrid(container, data, isFavList = false) {
+            container.innerHTML = data.map(v => `
+                <div class="card" onclick="handleAction(true, '${v.id}')">
+                    <div class="fav-badge ${isFavList ? 'is-fav' : ''}" onclick="toggleFav(event, '${v.id}', '${v.title}')">★</div>
+                    <div class="thumb" style="background-image: url('https://img.youtube.com/vi/${v.id}/mqdefault.jpg')"></div>
+                    <div class="card-body">
+                        <div class="vid-title">${v.title}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderHistory() {
+            renderGrid(document.getElementById('histGrid'), JSON.parse(localStorage.getItem('yt_history') || "[]"));
+        }
+
+        function renderFavs() {
+            const favs = JSON.parse(localStorage.getItem('yt_favorites') || "[]");
+            const box = document.getElementById('fav-box');
+            if (favs.length > 0) {
+                box.style.display = 'block';
+                renderGrid(document.getElementById('favGrid'), favs, true);
+            } else {
+                box.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
